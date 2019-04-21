@@ -1,5 +1,5 @@
-**HTML5 Animation**
+# HTML5 Animation
 
-*Get Started*
-`npm i`
-`npm run webpack-watch` or `npm run webpack`
+## Get Started
+1. `npm i`
+2. `npm run webpack-watch` or `npm run webpack`
