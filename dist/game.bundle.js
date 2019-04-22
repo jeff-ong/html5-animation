@@ -126,8 +126,13 @@ var enemy_obj = function enemy_obj(x) {
 
     _classCallCheck(this, enemy_obj);
 
-    this.x = x, this.y = y, this.delay = delay, this.speed = 5, this.randomize = randomize;
+    this.x = x, this.y = y, this.delay = delay, this.speed = 20, this.randomize = randomize;
 };
+
+//when to deploy the first enemy 
+
+
+var randomly_deploy_enemy = 100;
 
 var bullet_obj = function bullet_obj(x, y) {
     _classCallCheck(this, bullet_obj);
@@ -163,18 +168,27 @@ document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
 
 function enemy() {
-    var new_enemy = new enemy_obj(x, 0);
-    new_enemy.x = _helper2.default.getRandomNumber(windowProperties.width - 20);
-    new_enemy.randomize = _helper2.default.getRandomNumberWithMinAddMax(1000, 5000);
-    enemy_obj_arr.push(new_enemy);
+    var new_enemy = new enemy_obj(x, -20);
+    new_enemy.x = _helper2.default.getRandomNumberWithMinAddMax(20, windowProperties.width);
+    new_enemy.y = _helper2.default.getRandomNumberWithMinAddMax(-300, -200);
+    new_enemy.randomize = _helper2.default.getRandomNumberWithMinAddMax(1000, 10000);
+    if (randomly_deploy_enemy > 0) {
+        randomly_deploy_enemy--;
+    } else {
+        enemy_obj_arr.push(new_enemy);
+        randomly_deploy_enemy = _helper2.default.getRandomNumberWithMinAddMax(100, 300);
+    }
 
     enemy_obj_arr.map(function (item, index) {
-        console.log(item.randomize);
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        if (item.speed > 0) {
+            item.y += item.speed;
+            item.speed -= .5;
+        }
     });
-
-    window.setTimeout(function (_) {
-        enemy();
-    }, new_enemy.randomize);
 }
 
 function bullet() {
@@ -242,7 +256,7 @@ function paddle() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     paddle();
-
+    enemy();
     if (spacePressed) {
         bullet();
     }
