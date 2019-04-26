@@ -66,10 +66,6 @@ function enemy() {
     new_enemy.randomize = helper.getRandomNumberWithMinAddMax(1000, 5000);
     enemy_obj_arr.push(new_enemy);
 
-    enemy_obj_arr.map((item, index) => {
-        console.log(item.randomize);
-    });
-
     window.setTimeout(_ => {
         enemy();
     }, new_enemy.randomize);

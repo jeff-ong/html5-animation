@@ -168,13 +168,20 @@ function enemy() {
     new_enemy.randomize = _helper2.default.getRandomNumberWithMinAddMax(1000, 5000);
     enemy_obj_arr.push(new_enemy);
 
-    enemy_obj_arr.map(function (item, index) {
-        console.log(item.randomize);
-    });
-
     window.setTimeout(function (_) {
         enemy();
     }, new_enemy.randomize);
+}
+
+function showEnemy() {
+    enemy_obj_arr.map(function (item, index) {
+        ctx.fillStyle = "#F9A520";
+        ctx.moveTo(0, 0);
+        ctx.lineTo(20, 0);
+        ctx.lineTo(10, 20);
+        ctx.fill();
+        ctx.closePath();
+    });
 }
 
 function bullet() {
