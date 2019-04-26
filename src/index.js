@@ -20,10 +20,13 @@ class enemy_obj {
         this.x = x,
         this.y = y,
         this.delay = delay,
-        this.speed = 5,
+        this.speed = 20,
         this.randomize = randomize;
     }
 }
+
+//when to deploy the first enemy 
+let randomly_deploy_enemy = 100;
 
 class bullet_obj {
     constructor(x, y) {
@@ -61,14 +64,28 @@ document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
 
 function enemy() {
-    const new_enemy = new enemy_obj(x, 0);
-    new_enemy.x = helper.getRandomNumber(windowProperties.width - 20);
-    new_enemy.randomize = helper.getRandomNumberWithMinAddMax(1000, 5000);
-    enemy_obj_arr.push(new_enemy);
-
-    window.setTimeout(_ => {
-        enemy();
-    }, new_enemy.randomize);
+    const new_enemy = new enemy_obj(x, -20);
+    new_enemy.x = helper.getRandomNumberWithMinAddMax(20, windowProperties.width);
+    new_enemy.y = helper.getRandomNumberWithMinAddMax(-300, -200);
+    new_enemy.randomize = helper.getRandomNumberWithMinAddMax(1000, 10000);
+    if (randomly_deploy_enemy > 0) {
+        randomly_deploy_enemy--;
+    } else {
+        enemy_obj_arr.push(new_enemy);
+        randomly_deploy_enemy = helper.getRandomNumberWithMinAddMax(100, 300);  
+    }
+    
+    enemy_obj_arr.map((item,index) => {
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        if (item.speed > 0) {
+            item.y += item.speed;
+            item.speed -= .5;
+        } 
+    });
+   
 }
 
 function bullet() {
@@ -134,7 +151,7 @@ function paddle() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     paddle();
-
+    enemy();
     if (spacePressed) {
         bullet();
     }
