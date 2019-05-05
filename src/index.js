@@ -29,9 +29,10 @@ class enemy_obj {
 let randomly_deploy_enemy = 100;
 
 class bullet_obj {
-    constructor(x, y) {
+    constructor(x, y, initialY) {
         this.x = x,
         this.y = y,
+        this.initialY = initialY;
         this.speed = 5;
     }
 }
@@ -43,18 +44,17 @@ const canvas = document.getElementById('root');
 const ctx = canvas.getContext('2d');
 const x = canvas.width / 2;
 const y = canvas.height - 30;
-const paddleHeight = 30;
-const paddleWidth = 30;
+const planeHeight = 30;
+const planeWidth = 30;
 
 let rightPressed = false;
 let leftPressed = false;
 let upPressed = false;
 let downPressed = false;
 let spacePressed = false;
-let request = 0;
 
-player.x = (window.innerWidth - paddleWidth) / 2;
-player.y = (window.innerHeight - paddleHeight) / 2;
+player.x = (window.innerWidth - planeWidth) / 2;
+player.y = (window.innerHeight - planeHeight) / 2;
 windowProperties.width = window.innerWidth;
 windowProperties.height = window.innerHeight;
 
@@ -74,33 +74,45 @@ function enemy() {
         enemy_obj_arr.push(new_enemy);
         randomly_deploy_enemy = helper.getRandomNumberWithMinAddMax(100, 300);  
     }
-    
-    enemy_obj_arr.map((item,index) => {
+    enemy_obj_arr.map(item => {
         ctx.beginPath();
-        ctx.arc(item.x, item.y, 10, 0, 2 * Math.PI);
+        ctx.rect(item.x, item.y, 40, 20);
+        ctx.fillStyle = 'red';
         ctx.fill();
         ctx.closePath();
+
         if (item.speed > 0) {
             item.y += item.speed;
             item.speed -= .5;
         } 
     });
-   
 }
 
 function bullet() {
     if (bullet_obj_arr.length <= 0) {
         spacePressed = false;
     }
-    bullet_obj_arr.map((item, index) => {
+    bullet_obj_arr.map(bullet => {
         ctx.beginPath();
-        ctx.arc(item.x + (paddleWidth / 2), item.y, 5, 0, 2 * Math.PI);
-        ctx.fill();
+        ctx.arc(bullet.x + (planeWidth / 2), bullet.y, 5, 0, 2 * Math.PI);
+        ctx.fill(); 
         ctx.closePath();
-        if (item.y > -1) {
-            item.y -= item.speed;
+        if (bullet.y > -1) {
+            bullet.y -= bullet.speed;  
         } else {
-            bullet_obj_arr = bullet_obj_arr.filter(bullet => bullet !== item);
+            bullet_obj_arr = bullet_obj_arr.filter(item => item !== bullet);
+        }
+        for (let i = 0; i <= enemy_obj_arr.length; i++) {
+            if (enemy_obj_arr[i]
+                && enemy_obj_arr[i].y + 15 >= bullet.y
+                && Math.abs((enemy_obj_arr[i].x - bullet.x)
+                && Math.abs((enemy_obj_arr[i].x - bullet.x)) <= 25)) {
+                if (bullet.initialY <= enemy_obj_arr[i].y) {
+                    continue;
+                }
+                bullet_obj_arr = bullet_obj_arr.filter(item => item !== bullet);
+                enemy_obj_arr = enemy_obj_arr.filter(enemy => enemy !== enemy_obj_arr[i]);       
+            }
         }
     });
 }
@@ -108,7 +120,7 @@ function bullet() {
 function keyDownHandler(e) {
     if (e.keyCode == 32) {
         spacePressed = true;
-        const bullet_inst = new bullet_obj(player.x, player.y);
+        const bullet_inst = new bullet_obj(player.x, player.y, player.y);
         bullet_obj_arr.push(bullet_inst);
     }
     if (e.key == 'Up' || e.key == 'ArrowUp') {
@@ -140,9 +152,9 @@ function keyUpHandler(e) {
     }
 }
 
-function paddle() {
+function plane() {
     ctx.beginPath();
-    ctx.rect(player.x, player.y, paddleWidth, paddleHeight);
+    ctx.rect(player.x, player.y, planeWidth, planeHeight);
     ctx.fillStyle = '#fff';
     ctx.fill();
     ctx.closePath();
@@ -150,19 +162,17 @@ function paddle() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    paddle();
-    enemy();
+    plane();
     if (spacePressed) {
         bullet();
     }
-
-    if (downPressed && player.y < canvas.height - paddleHeight) {
+    if (downPressed && player.y < canvas.height - planeHeight) {
         player.y += player.speed;
     }
     if (upPressed && player.y > 0) {
         player.y -= player.speed;
     }
-    if (rightPressed && player.x < canvas.width - paddleWidth) {
+    if (rightPressed && player.x < canvas.width - planeWidth) {
         player.x += player.speed;
     }
     if (leftPressed && player.x > 0) {
@@ -172,5 +182,8 @@ function draw() {
 
 (function update() {
     draw();
+    enemy();
     requestAnimationFrame(update);
 })();
+
+
