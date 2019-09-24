@@ -6,10 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
-    "heroku-postbuild": "webpack -p",
-    "dev": "nodemon src/server.js",
-    "webpack": "webpack",
-    "webpack-watch": "webpack --watch"
+    "build": "webpack",
+    "heroku-run-build-script": true,
+    "dev": "webpack --watch"
   },
   "repository": {
     "type": "git",
