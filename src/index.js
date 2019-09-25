@@ -59,8 +59,8 @@ if (window.innerWidth >= 1024) {
   document.addEventListener(
     "touchmove",
     e => {
-      player.x = e.pageX;
-      player.y = e.pageY;
+      player.x = e.touches[0].pageX;
+      player.y = e.touches[0].pageY;
     },
     false
   );

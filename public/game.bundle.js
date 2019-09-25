@@ -354,8 +354,8 @@ if (window.innerWidth >= 1024) {
   }, false);
 } else {
   document.addEventListener("touchmove", function (e) {
-    player.x = e.pageX;
-    player.y = e.pageY;
+    player.x = e.touches[0].pageX;
+    player.y = e.touches[0].pageY;
   }, false);
 }
 
