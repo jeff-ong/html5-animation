@@ -73,7 +73,7 @@ document.addEventListener(
   false
 );
 
-Gyroscope.permission.query().then(data => console.log(data));
+// Gyroscope.permission.query().then(data => console.log(data));
 
 const gyroscope = new Gyroscope({ frequency: 60 });
 

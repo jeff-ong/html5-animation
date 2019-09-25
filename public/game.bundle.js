@@ -362,9 +362,7 @@ document.addEventListener("touchstart", function () {
   shootBullet();
 }, false);
 
-Gyroscope.permission.query().then(function (data) {
-  return console.log(data);
-});
+// Gyroscope.permission.query().then(data => console.log(data));
 
 var gyroscope = new Gyroscope({ frequency: 60 });
 
