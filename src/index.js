@@ -61,6 +61,7 @@ if (window.innerWidth >= 1024) {
     e => {
       player.x = e.touches[0].pageX;
       player.y = e.touches[0].pageY;
+      shootBullet();
     },
     false
   );
