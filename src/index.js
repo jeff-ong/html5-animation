@@ -50,9 +50,8 @@ if (window.innerWidth >= 1024) {
   document.addEventListener(
     "mousemove",
     e => {
-      console.log(e);
-      player.x = e.pageX;
-      player.y = e.pageY;
+      player.x = e.clientX;
+      player.y = e.clientY;
     },
     false
   );
@@ -60,9 +59,8 @@ if (window.innerWidth >= 1024) {
   document.addEventListener(
     "touchmove",
     e => {
-      console.log(e);
-      player.x = e.clientX;
-      player.y = e.clientY;
+      player.x = e.pageX;
+      player.y = e.pageY;
     },
     false
   );

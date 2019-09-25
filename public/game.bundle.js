@@ -349,15 +349,13 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 if (window.innerWidth >= 1024) {
   document.addEventListener("mousemove", function (e) {
-    console.log(e);
-    player.x = e.pageX;
-    player.y = e.pageY;
+    player.x = e.clientX;
+    player.y = e.clientY;
   }, false);
 } else {
   document.addEventListener("touchmove", function (e) {
-    console.log(e);
-    player.x = e.clientX;
-    player.y = e.clientY;
+    player.x = e.pageX;
+    player.y = e.pageY;
   }, false);
 }
 
