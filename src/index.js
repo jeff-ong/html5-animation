@@ -82,17 +82,17 @@ document.addEventListener(
   false
 );
 
-if (typeof Gyroscope === "function") {
-  const gyroscope = new Gyroscope({ frequency: 60 });
+// if (typeof Gyroscope === "function") {
+//   const gyroscope = new Gyroscope({ frequency: 60 });
 
-  gyroscope.addEventListener("reading", e => {
-    console.log("Angular velocity along the Z-axis " + gyroscope.z);
+//   gyroscope.addEventListener("reading", e => {
+//     console.log("Angular velocity along the Z-axis " + gyroscope.z);
 
-    player.x = gyroscope.x;
-    player.y = gyroscope.y;
-  });
-  gyroscope.start();
-}
+//     player.x = gyroscope.x;
+//     player.y = gyroscope.y;
+//   });
+//   gyroscope.start();
+// }
 
 function enemy() {
   const new_enemy = new Enemy(x, -20);

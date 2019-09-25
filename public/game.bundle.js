@@ -367,17 +367,17 @@ document.addEventListener("touchstart", function () {
   shootBullet();
 }, false);
 
-if (typeof Gyroscope === "function") {
-  var gyroscope = new Gyroscope({ frequency: 60 });
+// if (typeof Gyroscope === "function") {
+//   const gyroscope = new Gyroscope({ frequency: 60 });
 
-  gyroscope.addEventListener("reading", function (e) {
-    console.log("Angular velocity along the Z-axis " + gyroscope.z);
+//   gyroscope.addEventListener("reading", e => {
+//     console.log("Angular velocity along the Z-axis " + gyroscope.z);
 
-    player.x = gyroscope.x;
-    player.y = gyroscope.y;
-  });
-  gyroscope.start();
-}
+//     player.x = gyroscope.x;
+//     player.y = gyroscope.y;
+//   });
+//   gyroscope.start();
+// }
 
 function enemy() {
   var new_enemy = new _enemy2.default(x, -20);
