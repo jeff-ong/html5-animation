@@ -50,6 +50,17 @@ if (window.innerWidth >= 1024) {
   document.addEventListener(
     "mousemove",
     e => {
+      console.log(e);
+      player.x = e.pageX;
+      player.y = e.pageY;
+    },
+    false
+  );
+} else {
+  document.addEventListener(
+    "touchmove",
+    e => {
+      console.log(e);
       player.x = e.clientX;
       player.y = e.clientY;
     },
@@ -73,17 +84,17 @@ document.addEventListener(
   false
 );
 
-// Gyroscope.permission.query().then(data => console.log(data));
+if (typeof Gyroscope === "function") {
+  const gyroscope = new Gyroscope({ frequency: 60 });
 
-const gyroscope = new Gyroscope({ frequency: 60 });
+  gyroscope.addEventListener("reading", e => {
+    console.log("Angular velocity along the Z-axis " + gyroscope.z);
 
-gyroscope.addEventListener("reading", e => {
-  console.log("Angular velocity along the Z-axis " + gyroscope.z);
-
-  player.x = gyroscope.x;
-  player.y = gyroscope.y;
-});
-gyroscope.start();
+    player.x = gyroscope.x;
+    player.y = gyroscope.y;
+  });
+  gyroscope.start();
+}
 
 function enemy() {
   const new_enemy = new Enemy(x, -20);

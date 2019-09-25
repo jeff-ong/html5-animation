@@ -349,6 +349,13 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 if (window.innerWidth >= 1024) {
   document.addEventListener("mousemove", function (e) {
+    console.log(e);
+    player.x = e.pageX;
+    player.y = e.pageY;
+  }, false);
+} else {
+  document.addEventListener("touchmove", function (e) {
+    console.log(e);
     player.x = e.clientX;
     player.y = e.clientY;
   }, false);
@@ -362,17 +369,17 @@ document.addEventListener("touchstart", function () {
   shootBullet();
 }, false);
 
-// Gyroscope.permission.query().then(data => console.log(data));
+if (typeof Gyroscope === "function") {
+  var gyroscope = new Gyroscope({ frequency: 60 });
 
-var gyroscope = new Gyroscope({ frequency: 60 });
+  gyroscope.addEventListener("reading", function (e) {
+    console.log("Angular velocity along the Z-axis " + gyroscope.z);
 
-gyroscope.addEventListener("reading", function (e) {
-  console.log("Angular velocity along the Z-axis " + gyroscope.z);
-
-  player.x = gyroscope.x;
-  player.y = gyroscope.y;
-});
-gyroscope.start();
+    player.x = gyroscope.x;
+    player.y = gyroscope.y;
+  });
+  gyroscope.start();
+}
 
 function enemy() {
   var new_enemy = new _enemy2.default(x, -20);
