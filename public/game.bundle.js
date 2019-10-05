@@ -114,6 +114,10 @@ var _Enemy2 = _interopRequireDefault(_Enemy);
 
 var _Bullet = __webpack_require__(/*! ./components/Bullet */ "./src/components/Bullet.js");
 
+var _StarsBackground = __webpack_require__(/*! ./components/StarsBackground */ "./src/components/StarsBackground.js");
+
+var _StarsBackground2 = _interopRequireDefault(_StarsBackground);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var SpaceGame = function SpaceGame() {
@@ -145,6 +149,7 @@ var SpaceGame = function SpaceGame() {
       sg.Frame();
       window.requestAnimationFrame(updatePerFrame);
     };
+    (0, _StarsBackground2.default)();
     updatePerFrame();
   };
 
@@ -449,6 +454,132 @@ var Setting = function Setting() {
 };
 
 exports.default = Setting;
+
+/***/ }),
+
+/***/ "./src/components/StarsBackground.js":
+/*!*******************************************!*\
+  !*** ./src/components/StarsBackground.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var Universe = function Universe() {
+    var universe = {};
+    universe.background = document.getElementById("stars");
+    if (!universe.background) {
+        return "No element with id stars was found";
+    }
+    universe.ctx = universe.background.getContext("2d");
+    universe.width = window.innerWidth;
+    universe.height = window.innerHeight;
+    universe.entities = [];
+    universe.enttLen = 0;
+
+    universe.background.width = universe.width;
+    universe.background.height = universe.height;
+
+    return universe;
+};
+
+var Stars = function Stars(universe, starsPos) {
+    var stars = {};
+    stars.size = Math.random() * 2;
+    stars.speed = Math.random() * 0.3;
+    stars.x = starsPos.x;
+    stars.y = starsPos.y;
+
+    stars.reset = function () {
+        stars.size = Math.random() * 2;
+        stars.speed = Math.random() * 0.3;
+        stars.x = window.innerWidth;
+        stars.y = Math.random() * height;
+    };
+
+    stars.update = function () {
+        stars.y += stars.speed;
+        if (stars.y < 0) {
+            stars.reset();
+        } else {
+            universe.ctx.fillRect(stars.x, stars.y, stars.size, stars.size);
+        }
+    };
+
+    return stars;
+};
+
+var ShootingStar = function ShootingStar(universe) {
+    var shootingStar = {};
+    shootingStar.reset = function () {
+        shootingStar.x = Math.random() * width;
+        shootingStar.y = 0;
+        shootingStar.len = Math.random() * 80 + 10;
+        shootingStar.speed = Math.random() * 10 + 6;
+        shootingStar.size = Math.random() * 1 + 0.1;
+        shootingStar.waitTime = new Date().getTime() + Math.random() * 3000 + 500;
+        shootingStar.active = false;
+    };
+
+    shootingStar.update = function () {
+        if (shootingStar.active) {
+            shootingStar.x -= shootingStar.speed;
+            shootingStar.y += shootingStar.speed;
+            if (shootingStar.x < 0 || shootingStar.y >= height) {
+                shootingStar.reset();
+            } else {
+                universe.ctx.lineWidth = shootingStar.size;
+                universe.ctx.beginPath();
+                universe.ctx.moveTo(shootingStar.x, shootingStar.y);
+                universe.ctx.lineTo(shootingStar.x + shootingStar.len, shootingStar.y - shootingStar.len);
+                universe.ctx.stroke();
+            }
+        } else {
+            if (shootingStar.waitTime < new Date().getTime()) {
+                shootingStar.active = true;
+            }
+        }
+    };
+
+    return shootingStar;
+};
+
+var StarsBackground = function StarsBackground() {
+    var universe = Universe();
+    for (var i = 0; i <= universe.height; i++) {
+        universe.entities.push(Stars(universe, {
+            x: Math.random() * universe.width,
+            y: Math.random() * universe.height
+        }));
+    }
+    universe.entities.push(ShootingStar(universe));
+
+    universe.animate = function () {
+        universe.ctx.fillStyle = "#1e2859";
+        universe.ctx.fillRect(0, 0, universe.width, universe.height);
+        universe.ctx.fillStyle = "#fff";
+        universe.ctx.strokeStyle = "#fff";
+        universe.entLen = universe.entities.length;
+        while (universe.entLen--) {
+            universe.entities[universe.entLen].update();
+        }
+        window.requestAnimationFrame(universe.animate);
+    };
+
+    if (universe.background) {
+        universe.animate();
+        window.addEventListener('resize', function () {
+            return init();
+        });
+    }
+};
+
+exports.default = StarsBackground;
 
 /***/ }),
 

@@ -3,6 +3,8 @@ import Player from "./components/Player";
 import Enemy from "./components/Enemy";
 import { FireBulletAtEnemy } from "./components/Bullet";
 
+import StarsBackground from "./components/StarsBackground";
+
 const SpaceGame = () => {
   const sg = Setting();
 
@@ -32,6 +34,7 @@ const SpaceGame = () => {
       sg.Frame();
       window.requestAnimationFrame(updatePerFrame);
     };
+    StarsBackground();
     updatePerFrame();
   };
 
