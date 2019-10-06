@@ -1,14 +1,26 @@
-const Universe = () => {
+const directions = {
+    leftPressed: false,
+    rightPressed: false,
+    upPressed: false,
+    downPressed: false
+}
+
+export const setDirections = (direction, boolean) => {
+    directions[direction] = boolean;
+}
+
+const Universe = (sg) => {
     const universe = {};
     universe.background = document.getElementById("stars");
     if (!universe.background) {
         return "No element with id stars was found";
     }
+    universe.sg = sg;
     universe.ctx = universe.background.getContext("2d");
     universe.width = window.innerWidth;
     universe.height = window.innerHeight;
-    universe.entities = [];
-    universe.enttLen = 0;
+    universe.stars = [];
+    universe.threshold = 50;
 
     universe.background.width = universe.width;
     universe.background.height = universe.height;
@@ -19,33 +31,60 @@ const Universe = () => {
 const Stars = (universe, starsPos) => {
     const stars = {};
     stars.size = Math.random() * 2;
-    stars.speed = Math.random() * 0.3;
+    stars.speed = Math.random() * 0.8;
+    stars.staticSpeed = Math.random() * 0.2;
     stars.x = starsPos.x;
     stars.y = starsPos.y;
 
     stars.reset = () => {
         stars.size = Math.random() * 2;
-        stars.speed = Math.random() * 0.3;
+        stars.speed = Math.random() * 0.8;
+        stars.staticSpeed = Math.random() * 0.2;
         stars.x = window.innerWidth;
-        stars.y = Math.random() * height;
+        stars.y = Math.random() * universe.height;
     };
 
     stars.update = () => {
-        stars.y += stars.speed;
-        if (stars.y < 0) {
+        let condition = stars.y < 0;
+        if (directions.rightPressed) {
+            stars.x += stars.speed;
+            condition = stars.x > universe.width;
+        }
+
+        if (directions.leftPressed) {
+            stars.x -= stars.speed;
+            condition = stars.x < 0;
+        }
+
+        if (directions.downPressed) {
+            stars.y -= stars.speed;
+            condition = stars.y < 0;
+        } else {
+            stars.y += stars.staticSpeed;
+            condition = stars.y > universe.height;
+        }
+
+        if (directions.upPressed) {
+            stars.y += stars.speed;
+            condition = stars.y > universe.height;
+        } 
+      
+        if (condition) {
             stars.reset();
         } else {
             universe.ctx.fillRect(stars.x, stars.y, stars.size, stars.size);
         }
+        return;
     }
 
     return stars;
 };
 
-const ShootingStar = (universe) => {
+const ShootingStar = universe => {
     const shootingStar = {};
+    shootingStar.active = true;
     shootingStar.reset = () => {
-        shootingStar.x = Math.random() * width;
+        shootingStar.x = Math.random() * universe.width;
         shootingStar.y = 0;
         shootingStar.len = Math.random() * 80 + 10;
         shootingStar.speed = Math.random() * 10 + 6;
@@ -58,7 +97,7 @@ const ShootingStar = (universe) => {
         if (shootingStar.active) {
             shootingStar.x -= shootingStar.speed;
             shootingStar.y += shootingStar.speed;
-            if (shootingStar.x < 0 || shootingStar.y >= height) {
+            if (shootingStar.x < 0 || shootingStar.y >= universe.height) {
                 shootingStar.reset();
             } else {
                 universe.ctx.lineWidth = shootingStar.size;
@@ -77,33 +116,60 @@ const ShootingStar = (universe) => {
     return shootingStar;
 }
 
-const StarsBackground = () => {
-    const universe = Universe();
+const StarsBackground = (sg) => {
+    const universe = Universe(sg);
+    const updateStarsDirectionsOnMouseMove = () => {
+        if (Math.abs(sg.directions.x - sg.directions.oldx) > universe.threshold ||
+            Math.abs(sg.directions.y - sg.directions.oldy) > universe.threshold) {
+            sg.directions.oldx = sg.directions.x;
+            sg.directions.oldy = sg.directions.y;
+
+            if (sg.directions.x - sg.directions.oldx > 0) {
+                directions.rightPressed = true;
+            }
+
+            if (sg.directions.x - sg.directions.oldx < 0) {
+                directions.leftPressed = true;
+            }
+
+            if (sg.directions.y - sg.directions.oldy > 0) {
+                directions.downPressed = true;
+            }
+
+            if (sg.directions.y - sg.directions.oldy < 0) {
+                directions.upPressed = true;
+            }
+        }
+    }
+
     for (let i = 0; i <= universe.height; i++) {
-        universe.entities.push(
+        universe.stars.push(
             Stars(universe, {
                 x: Math.random() * universe.width,
                 y: Math.random() * universe.height
             })
         );
     }
-    universe.entities.push(ShootingStar(universe));
+    universe.stars.push(ShootingStar(universe));
 
     universe.animate = () => {
         universe.ctx.fillStyle = "#1e2859";
         universe.ctx.fillRect(0, 0, universe.width, universe.height);
         universe.ctx.fillStyle = "#fff";
         universe.ctx.strokeStyle = "#fff";
-        universe.entLen = universe.entities.length;
-        while (universe.entLen--) {
-            universe.entities[universe.entLen].update();
-        }
+
+        updateStarsDirectionsOnMouseMove();
+
+        universe.stars.map(star => {
+            star.update();
+        });
+        
         window.requestAnimationFrame(universe.animate);
     }
 
     if (universe.background) {
         universe.animate();
-        window.addEventListener('resize', () => init());
+        window.addEventListener('resize', () => StarsBackground());
     }
 }
 

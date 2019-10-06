@@ -202,6 +202,433 @@ function toComment(sourceMap) {
 
 /***/ }),
 
+/***/ "./node_modules/events/events.js":
+/*!***************************************!*\
+  !*** ./node_modules/events/events.js ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var R = (typeof Reflect === 'undefined' ? 'undefined' : _typeof(Reflect)) === 'object' ? Reflect : null;
+var ReflectApply = R && typeof R.apply === 'function' ? R.apply : function ReflectApply(target, receiver, args) {
+  return Function.prototype.apply.call(target, receiver, args);
+};
+
+var ReflectOwnKeys;
+if (R && typeof R.ownKeys === 'function') {
+  ReflectOwnKeys = R.ownKeys;
+} else if (Object.getOwnPropertySymbols) {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target).concat(Object.getOwnPropertySymbols(target));
+  };
+} else {
+  ReflectOwnKeys = function ReflectOwnKeys(target) {
+    return Object.getOwnPropertyNames(target);
+  };
+}
+
+function ProcessEmitWarning(warning) {
+  if (console && console.warn) console.warn(warning);
+}
+
+var NumberIsNaN = Number.isNaN || function NumberIsNaN(value) {
+  return value !== value;
+};
+
+function EventEmitter() {
+  EventEmitter.init.call(this);
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._eventsCount = 0;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+var defaultMaxListeners = 10;
+
+Object.defineProperty(EventEmitter, 'defaultMaxListeners', {
+  enumerable: true,
+  get: function get() {
+    return defaultMaxListeners;
+  },
+  set: function set(arg) {
+    if (typeof arg !== 'number' || arg < 0 || NumberIsNaN(arg)) {
+      throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + arg + '.');
+    }
+    defaultMaxListeners = arg;
+  }
+});
+
+EventEmitter.init = function () {
+
+  if (this._events === undefined || this._events === Object.getPrototypeOf(this)._events) {
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+  }
+
+  this._maxListeners = this._maxListeners || undefined;
+};
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function setMaxListeners(n) {
+  if (typeof n !== 'number' || n < 0 || NumberIsNaN(n)) {
+    throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + n + '.');
+  }
+  this._maxListeners = n;
+  return this;
+};
+
+function $getMaxListeners(that) {
+  if (that._maxListeners === undefined) return EventEmitter.defaultMaxListeners;
+  return that._maxListeners;
+}
+
+EventEmitter.prototype.getMaxListeners = function getMaxListeners() {
+  return $getMaxListeners(this);
+};
+
+EventEmitter.prototype.emit = function emit(type) {
+  var args = [];
+  for (var i = 1; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }var doError = type === 'error';
+
+  var events = this._events;
+  if (events !== undefined) doError = doError && events.error === undefined;else if (!doError) return false;
+
+  // If there is no 'error' event listener then throw.
+  if (doError) {
+    var er;
+    if (args.length > 0) er = args[0];
+    if (er instanceof Error) {
+      // Note: The comments on the `throw` lines are intentional, they show
+      // up in Node's output if this results in an unhandled exception.
+      throw er; // Unhandled 'error' event
+    }
+    // At least give some kind of context to the user
+    var err = new Error('Unhandled error.' + (er ? ' (' + er.message + ')' : ''));
+    err.context = er;
+    throw err; // Unhandled 'error' event
+  }
+
+  var handler = events[type];
+
+  if (handler === undefined) return false;
+
+  if (typeof handler === 'function') {
+    ReflectApply(handler, this, args);
+  } else {
+    var len = handler.length;
+    var listeners = arrayClone(handler, len);
+    for (var i = 0; i < len; ++i) {
+      ReflectApply(listeners[i], this, args);
+    }
+  }
+
+  return true;
+};
+
+function _addListener(target, type, listener, prepend) {
+  var m;
+  var events;
+  var existing;
+
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + (typeof listener === 'undefined' ? 'undefined' : _typeof(listener)));
+  }
+
+  events = target._events;
+  if (events === undefined) {
+    events = target._events = Object.create(null);
+    target._eventsCount = 0;
+  } else {
+    // To avoid recursion in the case that type === "newListener"! Before
+    // adding it to the listeners, first emit "newListener".
+    if (events.newListener !== undefined) {
+      target.emit('newListener', type, listener.listener ? listener.listener : listener);
+
+      // Re-assign `events` because a newListener handler could have caused the
+      // this._events to be assigned to a new object
+      events = target._events;
+    }
+    existing = events[type];
+  }
+
+  if (existing === undefined) {
+    // Optimize the case of one listener. Don't need the extra array object.
+    existing = events[type] = listener;
+    ++target._eventsCount;
+  } else {
+    if (typeof existing === 'function') {
+      // Adding the second element, need to change to array.
+      existing = events[type] = prepend ? [listener, existing] : [existing, listener];
+      // If we've already got an array, just append.
+    } else if (prepend) {
+      existing.unshift(listener);
+    } else {
+      existing.push(listener);
+    }
+
+    // Check for listener leak
+    m = $getMaxListeners(target);
+    if (m > 0 && existing.length > m && !existing.warned) {
+      existing.warned = true;
+      // No error code for this since it is a Warning
+      // eslint-disable-next-line no-restricted-syntax
+      var w = new Error('Possible EventEmitter memory leak detected. ' + existing.length + ' ' + String(type) + ' listeners ' + 'added. Use emitter.setMaxListeners() to ' + 'increase limit');
+      w.name = 'MaxListenersExceededWarning';
+      w.emitter = target;
+      w.type = type;
+      w.count = existing.length;
+      ProcessEmitWarning(w);
+    }
+  }
+
+  return target;
+}
+
+EventEmitter.prototype.addListener = function addListener(type, listener) {
+  return _addListener(this, type, listener, false);
+};
+
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+
+EventEmitter.prototype.prependListener = function prependListener(type, listener) {
+  return _addListener(this, type, listener, true);
+};
+
+function onceWrapper() {
+  var args = [];
+  for (var i = 0; i < arguments.length; i++) {
+    args.push(arguments[i]);
+  }if (!this.fired) {
+    this.target.removeListener(this.type, this.wrapFn);
+    this.fired = true;
+    ReflectApply(this.listener, this.target, args);
+  }
+}
+
+function _onceWrap(target, type, listener) {
+  var state = { fired: false, wrapFn: undefined, target: target, type: type, listener: listener };
+  var wrapped = onceWrapper.bind(state);
+  wrapped.listener = listener;
+  state.wrapFn = wrapped;
+  return wrapped;
+}
+
+EventEmitter.prototype.once = function once(type, listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + (typeof listener === 'undefined' ? 'undefined' : _typeof(listener)));
+  }
+  this.on(type, _onceWrap(this, type, listener));
+  return this;
+};
+
+EventEmitter.prototype.prependOnceListener = function prependOnceListener(type, listener) {
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + (typeof listener === 'undefined' ? 'undefined' : _typeof(listener)));
+  }
+  this.prependListener(type, _onceWrap(this, type, listener));
+  return this;
+};
+
+// Emits a 'removeListener' event if and only if the listener was removed.
+EventEmitter.prototype.removeListener = function removeListener(type, listener) {
+  var list, events, position, i, originalListener;
+
+  if (typeof listener !== 'function') {
+    throw new TypeError('The "listener" argument must be of type Function. Received type ' + (typeof listener === 'undefined' ? 'undefined' : _typeof(listener)));
+  }
+
+  events = this._events;
+  if (events === undefined) return this;
+
+  list = events[type];
+  if (list === undefined) return this;
+
+  if (list === listener || list.listener === listener) {
+    if (--this._eventsCount === 0) this._events = Object.create(null);else {
+      delete events[type];
+      if (events.removeListener) this.emit('removeListener', type, list.listener || listener);
+    }
+  } else if (typeof list !== 'function') {
+    position = -1;
+
+    for (i = list.length - 1; i >= 0; i--) {
+      if (list[i] === listener || list[i].listener === listener) {
+        originalListener = list[i].listener;
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0) return this;
+
+    if (position === 0) list.shift();else {
+      spliceOne(list, position);
+    }
+
+    if (list.length === 1) events[type] = list[0];
+
+    if (events.removeListener !== undefined) this.emit('removeListener', type, originalListener || listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
+
+EventEmitter.prototype.removeAllListeners = function removeAllListeners(type) {
+  var listeners, events, i;
+
+  events = this._events;
+  if (events === undefined) return this;
+
+  // not listening for removeListener, no need to emit
+  if (events.removeListener === undefined) {
+    if (arguments.length === 0) {
+      this._events = Object.create(null);
+      this._eventsCount = 0;
+    } else if (events[type] !== undefined) {
+      if (--this._eventsCount === 0) this._events = Object.create(null);else delete events[type];
+    }
+    return this;
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    var keys = Object.keys(events);
+    var key;
+    for (i = 0; i < keys.length; ++i) {
+      key = keys[i];
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = Object.create(null);
+    this._eventsCount = 0;
+    return this;
+  }
+
+  listeners = events[type];
+
+  if (typeof listeners === 'function') {
+    this.removeListener(type, listeners);
+  } else if (listeners !== undefined) {
+    // LIFO order
+    for (i = listeners.length - 1; i >= 0; i--) {
+      this.removeListener(type, listeners[i]);
+    }
+  }
+
+  return this;
+};
+
+function _listeners(target, type, unwrap) {
+  var events = target._events;
+
+  if (events === undefined) return [];
+
+  var evlistener = events[type];
+  if (evlistener === undefined) return [];
+
+  if (typeof evlistener === 'function') return unwrap ? [evlistener.listener || evlistener] : [evlistener];
+
+  return unwrap ? unwrapListeners(evlistener) : arrayClone(evlistener, evlistener.length);
+}
+
+EventEmitter.prototype.listeners = function listeners(type) {
+  return _listeners(this, type, true);
+};
+
+EventEmitter.prototype.rawListeners = function rawListeners(type) {
+  return _listeners(this, type, false);
+};
+
+EventEmitter.listenerCount = function (emitter, type) {
+  if (typeof emitter.listenerCount === 'function') {
+    return emitter.listenerCount(type);
+  } else {
+    return listenerCount.call(emitter, type);
+  }
+};
+
+EventEmitter.prototype.listenerCount = listenerCount;
+function listenerCount(type) {
+  var events = this._events;
+
+  if (events !== undefined) {
+    var evlistener = events[type];
+
+    if (typeof evlistener === 'function') {
+      return 1;
+    } else if (evlistener !== undefined) {
+      return evlistener.length;
+    }
+  }
+
+  return 0;
+}
+
+EventEmitter.prototype.eventNames = function eventNames() {
+  return this._eventsCount > 0 ? ReflectOwnKeys(this._events) : [];
+};
+
+function arrayClone(arr, n) {
+  var copy = new Array(n);
+  for (var i = 0; i < n; ++i) {
+    copy[i] = arr[i];
+  }return copy;
+}
+
+function spliceOne(list, index) {
+  for (; index + 1 < list.length; index++) {
+    list[index] = list[index + 1];
+  }list.pop();
+}
+
+function unwrapListeners(arr) {
+  var ret = new Array(arr.length);
+  for (var i = 0; i < ret.length; ++i) {
+    ret[i] = arr[i].listener || arr[i];
+  }
+  return ret;
+}
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
@@ -525,8 +952,6 @@ var _Bullet = __webpack_require__(/*! ./components/Bullet */ "./src/components/B
 
 var _StarsBackground = __webpack_require__(/*! ./components/StarsBackground */ "./src/components/StarsBackground.js");
 
-var _StarsBackground2 = _interopRequireDefault(_StarsBackground);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var SpaceGame = function SpaceGame() {
@@ -541,15 +966,19 @@ var SpaceGame = function SpaceGame() {
     }
     if (sg.downPressed && sg.player.y < sg.canvas.height - sg.planeHeight) {
       sg.player.y += sg.player.speed;
+      (0, _StarsBackground.setDirections)('downPressed', true);
     }
     if (sg.upPressed && sg.player.y > 0) {
       sg.player.y -= sg.player.speed;
+      (0, _StarsBackground.setDirections)('upPressed', true);
     }
     if (sg.rightPressed && sg.player.x < sg.canvas.width - sg.planeWidth) {
       sg.player.x += sg.player.speed;
+      (0, _StarsBackground.setDirections)('leftPressed', true);
     }
     if (sg.leftPressed && sg.player.x > 0) {
       sg.player.x -= sg.player.speed;
+      (0, _StarsBackground.setDirections)('rightPressed', true);
     }
   };
 
@@ -558,7 +987,6 @@ var SpaceGame = function SpaceGame() {
       sg.Frame();
       window.requestAnimationFrame(updatePerFrame);
     };
-    (0, _StarsBackground2.default)();
     updatePerFrame();
   };
 
@@ -655,38 +1083,50 @@ var FireBulletAtEnemy = exports.FireBulletAtEnemy = function FireBulletAtEnemy(s
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _StarsBackground = __webpack_require__(/*! ./StarsBackground */ "./src/components/StarsBackground.js");
+
 var Controls = function Controls(sg) {
   var controls = {};
-
+  var Directions = {
+    Up: ["Up", "ArrowUp"],
+    Down: ["Down", "ArrowDown"],
+    Left: ["Left", "ArrowLeft"],
+    Right: ["Right", "ArrowRight"]
+  };
   controls.keyDownHandler = function (e) {
     if (e.keyCode == 32) {
       sg.shootBullet();
     }
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    if (Directions.Up.includes(e.key)) {
       sg.upPressed = true;
     }
-    if (e.key == "Down" || e.key == "ArrowDown") {
+    if (Directions.Down.includes(e.key)) {
       sg.downPressed = true;
     }
-    if (e.key == "Right" || e.key == "ArrowRight") {
+    if (Directions.Right.includes(e.key)) {
       sg.rightPressed = true;
     }
-    if (e.key == "Left" || e.key == "ArrowLeft") {
+    if (Directions.Left.includes(e.key)) {
       sg.leftPressed = true;
     }
   };
 
   controls.keyUpHandler = function (e) {
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    (0, _StarsBackground.setDirections)('upPressed', false);
+    (0, _StarsBackground.setDirections)('downPressed', false);
+    (0, _StarsBackground.setDirections)('leftPressed', false);
+    (0, _StarsBackground.setDirections)('rightPressed', false);
+    if (Directions.Up.includes(e.key)) {
       sg.upPressed = false;
     }
-    if (e.key == "Down" || e.key == "ArrowDown") {
+    if (Directions.Down.includes(e.key)) {
       sg.downPressed = false;
     }
-    if (e.key == "Right" || e.key == "ArrowRight") {
+    if (Directions.Right.includes(e.key)) {
       sg.rightPressed = false;
     }
-    if (e.key == "Left" || e.key == "ArrowLeft") {
+    if (Directions.Left.includes(e.key)) {
       sg.leftPressed = false;
     }
   };
@@ -700,15 +1140,15 @@ var Controls = function Controls(sg) {
   document.addEventListener("keydown", controls.keyDownHandler);
   document.addEventListener("keyup", controls.keyUpHandler);
 
-  if (window.innerWidth >= 1024) {
+  if (window.innerWidth >= 480) {
     document.addEventListener("mousemove", function (e) {
-      sg.player.x = e.clientX;
-      sg.player.y = e.clientY;
+      sg.directions.x = sg.player.x = e.clientX;
+      sg.directions.y = sg.player.y = e.clientY;
     }, false);
   } else {
     document.addEventListener("touchmove", function (e) {
-      sg.player.x = e.touches[0].pageX;
-      sg.player.y = e.touches[0].pageY;
+      sg.directions.x = sg.player.x = e.touches[0].pageX;
+      sg.directions.y = sg.player.y = e.touches[0].pageY;
       sg.shootBullet();
     }, false);
   }
@@ -824,6 +1264,10 @@ var _Controls = __webpack_require__(/*! ./Controls */ "./src/components/Controls
 
 var _Controls2 = _interopRequireDefault(_Controls);
 
+var _StarsBackground = __webpack_require__(/*! ./StarsBackground */ "./src/components/StarsBackground.js");
+
+var _StarsBackground2 = _interopRequireDefault(_StarsBackground);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Setting = function Setting() {
@@ -843,6 +1287,12 @@ var Setting = function Setting() {
   setting.downPressed = false;
   setting.spacePressed = false;
   setting.shootBullet = null;
+  setting.directions = {
+    x: 0,
+    y: 0,
+    oldx: 0,
+    oldy: 0
+  };
   setting.player = {
     x: 0,
     y: 0,
@@ -858,6 +1308,8 @@ var Setting = function Setting() {
   (0, _Bullet.Bullet)(setting);
 
   (0, _Controls2.default)(setting);
+
+  (0, _StarsBackground2.default)(setting);
 
   return setting;
 };
@@ -879,17 +1331,29 @@ exports.default = Setting;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-var Universe = function Universe() {
+var directions = {
+    leftPressed: false,
+    rightPressed: false,
+    upPressed: false,
+    downPressed: false
+};
+
+var setDirections = exports.setDirections = function setDirections(direction, boolean) {
+    directions[direction] = boolean;
+};
+
+var Universe = function Universe(sg) {
     var universe = {};
     universe.background = document.getElementById("stars");
     if (!universe.background) {
         return "No element with id stars was found";
     }
+    universe.sg = sg;
     universe.ctx = universe.background.getContext("2d");
     universe.width = window.innerWidth;
     universe.height = window.innerHeight;
-    universe.entities = [];
-    universe.enttLen = 0;
+    universe.stars = [];
+    universe.threshold = 50;
 
     universe.background.width = universe.width;
     universe.background.height = universe.height;
@@ -900,24 +1364,50 @@ var Universe = function Universe() {
 var Stars = function Stars(universe, starsPos) {
     var stars = {};
     stars.size = Math.random() * 2;
-    stars.speed = Math.random() * 0.3;
+    stars.speed = Math.random() * 0.8;
+    stars.staticSpeed = Math.random() * 0.2;
     stars.x = starsPos.x;
     stars.y = starsPos.y;
 
     stars.reset = function () {
         stars.size = Math.random() * 2;
-        stars.speed = Math.random() * 0.3;
+        stars.speed = Math.random() * 0.8;
+        stars.staticSpeed = Math.random() * 0.2;
         stars.x = window.innerWidth;
-        stars.y = Math.random() * height;
+        stars.y = Math.random() * universe.height;
     };
 
     stars.update = function () {
-        stars.y += stars.speed;
-        if (stars.y < 0) {
+        var condition = stars.y < 0;
+        if (directions.rightPressed) {
+            stars.x += stars.speed;
+            condition = stars.x > universe.width;
+        }
+
+        if (directions.leftPressed) {
+            stars.x -= stars.speed;
+            condition = stars.x < 0;
+        }
+
+        if (directions.downPressed) {
+            stars.y -= stars.speed;
+            condition = stars.y < 0;
+        } else {
+            stars.y += stars.staticSpeed;
+            condition = stars.y > universe.height;
+        }
+
+        if (directions.upPressed) {
+            stars.y += stars.speed;
+            condition = stars.y > universe.height;
+        }
+
+        if (condition) {
             stars.reset();
         } else {
             universe.ctx.fillRect(stars.x, stars.y, stars.size, stars.size);
         }
+        return;
     };
 
     return stars;
@@ -925,8 +1415,9 @@ var Stars = function Stars(universe, starsPos) {
 
 var ShootingStar = function ShootingStar(universe) {
     var shootingStar = {};
+    shootingStar.active = true;
     shootingStar.reset = function () {
-        shootingStar.x = Math.random() * width;
+        shootingStar.x = Math.random() * universe.width;
         shootingStar.y = 0;
         shootingStar.len = Math.random() * 80 + 10;
         shootingStar.speed = Math.random() * 10 + 6;
@@ -939,7 +1430,7 @@ var ShootingStar = function ShootingStar(universe) {
         if (shootingStar.active) {
             shootingStar.x -= shootingStar.speed;
             shootingStar.y += shootingStar.speed;
-            if (shootingStar.x < 0 || shootingStar.y >= height) {
+            if (shootingStar.x < 0 || shootingStar.y >= universe.height) {
                 shootingStar.reset();
             } else {
                 universe.ctx.lineWidth = shootingStar.size;
@@ -958,32 +1449,58 @@ var ShootingStar = function ShootingStar(universe) {
     return shootingStar;
 };
 
-var StarsBackground = function StarsBackground() {
-    var universe = Universe();
+var StarsBackground = function StarsBackground(sg) {
+    var universe = Universe(sg);
+    var updateStarsDirectionsOnMouseMove = function updateStarsDirectionsOnMouseMove() {
+        if (Math.abs(sg.directions.x - sg.directions.oldx) > universe.threshold || Math.abs(sg.directions.y - sg.directions.oldy) > universe.threshold) {
+            sg.directions.oldx = sg.directions.x;
+            sg.directions.oldy = sg.directions.y;
+
+            if (sg.directions.x - sg.directions.oldx > 0) {
+                directions.rightPressed = true;
+            }
+
+            if (sg.directions.x - sg.directions.oldx < 0) {
+                directions.leftPressed = true;
+            }
+
+            if (sg.directions.y - sg.directions.oldy > 0) {
+                directions.downPressed = true;
+            }
+
+            if (sg.directions.y - sg.directions.oldy < 0) {
+                directions.upPressed = true;
+            }
+        }
+    };
+
     for (var i = 0; i <= universe.height; i++) {
-        universe.entities.push(Stars(universe, {
+        universe.stars.push(Stars(universe, {
             x: Math.random() * universe.width,
             y: Math.random() * universe.height
         }));
     }
-    universe.entities.push(ShootingStar(universe));
+    universe.stars.push(ShootingStar(universe));
 
     universe.animate = function () {
         universe.ctx.fillStyle = "#1e2859";
         universe.ctx.fillRect(0, 0, universe.width, universe.height);
         universe.ctx.fillStyle = "#fff";
         universe.ctx.strokeStyle = "#fff";
-        universe.entLen = universe.entities.length;
-        while (universe.entLen--) {
-            universe.entities[universe.entLen].update();
-        }
+
+        updateStarsDirectionsOnMouseMove();
+
+        universe.stars.map(function (star) {
+            star.update();
+        });
+
         window.requestAnimationFrame(universe.animate);
     };
 
     if (universe.background) {
         universe.animate();
         window.addEventListener('resize', function () {
-            return init();
+            return StarsBackground();
         });
     }
 };
@@ -1054,6 +1571,16 @@ if (content.locals) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.eventEmitter = undefined;
+
+var _events = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+
+var _events2 = _interopRequireDefault(_events);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var eventEmitter = exports.eventEmitter = new _events2.default.EventEmitter();
+
 var Helper = {
   getRandomNumber: function getRandomNumber(max) {
     return Math.floor(Math.random() * Math.floor(max));

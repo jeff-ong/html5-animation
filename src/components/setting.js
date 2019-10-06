@@ -1,5 +1,9 @@
-import { Bullet } from "./Bullet";
+import {
+  Bullet
+} from "./Bullet";
 import Controls from "./Controls";
+
+import StarsBackground from "./StarsBackground";
 
 const Setting = () => {
   const setting = {};
@@ -18,6 +22,12 @@ const Setting = () => {
   setting.downPressed = false;
   setting.spacePressed = false;
   setting.shootBullet = null;
+  setting.directions = {
+    x: 0,
+    y: 0,
+    oldx: 0,
+    oldy: 0
+  };
   setting.player = {
     x: 0,
     y: 0,
@@ -33,6 +43,8 @@ const Setting = () => {
   Bullet(setting);
 
   Controls(setting);
+
+  StarsBackground(setting);
 
   return setting;
 };

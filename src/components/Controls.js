@@ -1,35 +1,48 @@
+import {
+  setDirections
+} from "./StarsBackground";
+
 const Controls = sg => {
   const controls = {};
-
+  const Directions = {
+    Up: ["Up", "ArrowUp"],
+    Down: ["Down", "ArrowDown"],
+    Left: ["Left", "ArrowLeft"],
+    Right: ["Right", "ArrowRight"],
+  }
   controls.keyDownHandler = e => {
     if (e.keyCode == 32) {
       sg.shootBullet();
     }
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    if (Directions.Up.includes(e.key)) {
       sg.upPressed = true;
     }
-    if (e.key == "Down" || e.key == "ArrowDown") {
+    if (Directions.Down.includes(e.key)) {
       sg.downPressed = true;
     }
-    if (e.key == "Right" || e.key == "ArrowRight") {
+    if (Directions.Right.includes(e.key)) {
       sg.rightPressed = true;
     }
-    if (e.key == "Left" || e.key == "ArrowLeft") {
+    if (Directions.Left.includes(e.key)) {
       sg.leftPressed = true;
     }
   };
 
   controls.keyUpHandler = e => {
-    if (e.key == "Up" || e.key == "ArrowUp") {
+    setDirections('upPressed', false);
+    setDirections('downPressed', false);
+    setDirections('leftPressed', false);
+    setDirections('rightPressed', false);
+    if (Directions.Up.includes(e.key)) {
       sg.upPressed = false;
     }
-    if (e.key == "Down" || e.key == "ArrowDown") {
+    if (Directions.Down.includes(e.key)) {
       sg.downPressed = false;
     }
-    if (e.key == "Right" || e.key == "ArrowRight") {
+    if (Directions.Right.includes(e.key)) {
       sg.rightPressed = false;
     }
-    if (e.key == "Left" || e.key == "ArrowLeft") {
+    if (Directions.Left.includes(e.key)) {
       sg.leftPressed = false;
     }
   };
@@ -43,12 +56,12 @@ const Controls = sg => {
   document.addEventListener("keydown", controls.keyDownHandler);
   document.addEventListener("keyup", controls.keyUpHandler);
 
-  if (window.innerWidth >= 1024) {
+  if (window.innerWidth >= 480) {
     document.addEventListener(
       "mousemove",
       e => {
-        sg.player.x = e.clientX;
-        sg.player.y = e.clientY;
+        sg.directions.x = sg.player.x = e.clientX;
+        sg.directions.y = sg.player.y = e.clientY;
       },
       false
     );
@@ -56,8 +69,8 @@ const Controls = sg => {
     document.addEventListener(
       "touchmove",
       e => {
-        sg.player.x = e.touches[0].pageX;
-        sg.player.y = e.touches[0].pageY;
+        sg.directions.x = sg.player.x = e.touches[0].pageX;
+        sg.directions.y = sg.player.y = e.touches[0].pageY;
         sg.shootBullet();
       },
       false
