@@ -1,9 +1,4 @@
-import {
-  Bullet
-} from "./Bullet";
 import Controls from "./Controls";
-
-import StarsBackground from "./StarsBackground";
 
 const Setting = () => {
   const setting = {};
@@ -40,11 +35,7 @@ const Setting = () => {
     height: 0
   };
 
-  Bullet(setting);
-
   Controls(setting);
-
-  StarsBackground(setting);
 
   return setting;
 };

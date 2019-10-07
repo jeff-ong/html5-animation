@@ -952,11 +952,14 @@ var _Bullet = __webpack_require__(/*! ./components/Bullet */ "./src/components/B
 
 var _StarsBackground = __webpack_require__(/*! ./components/StarsBackground */ "./src/components/StarsBackground.js");
 
+var _StarsBackground2 = _interopRequireDefault(_StarsBackground);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var SpaceGame = function SpaceGame() {
   var sg = (0, _Setting2.default)();
-
+  (0, _Bullet.Bullet)(sg);
+  var StarsBackgroundObj = (0, _StarsBackground2.default)(sg);
   sg.Frame = function () {
     sg.ctx.clearRect(0, 0, sg.canvas.width, sg.canvas.height);
     (0, _Player2.default)(sg);
@@ -985,6 +988,7 @@ var SpaceGame = function SpaceGame() {
   sg.startTheGame = function () {
     var updatePerFrame = function updatePerFrame() {
       sg.Frame();
+      StarsBackgroundObj.animate();
       window.requestAnimationFrame(updatePerFrame);
     };
     updatePerFrame();
@@ -1258,15 +1262,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _Bullet = __webpack_require__(/*! ./Bullet */ "./src/components/Bullet.js");
-
 var _Controls = __webpack_require__(/*! ./Controls */ "./src/components/Controls.js");
 
 var _Controls2 = _interopRequireDefault(_Controls);
-
-var _StarsBackground = __webpack_require__(/*! ./StarsBackground */ "./src/components/StarsBackground.js");
-
-var _StarsBackground2 = _interopRequireDefault(_StarsBackground);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1305,11 +1303,7 @@ var Setting = function Setting() {
     height: 0
   };
 
-  (0, _Bullet.Bullet)(setting);
-
   (0, _Controls2.default)(setting);
-
-  (0, _StarsBackground2.default)(setting);
 
   return setting;
 };
@@ -1361,70 +1355,60 @@ var Universe = function Universe(sg) {
     return universe;
 };
 
-var Stars = function Stars(universe, starsPos) {
-    var stars = {};
-    stars.size = Math.random() * 2;
-    stars.speed = Math.random() * 0.8;
-    stars.staticSpeed = Math.random() * 0.2;
-    stars.x = starsPos.x;
-    stars.y = starsPos.y;
+var Star = function Star(universe) {
+    var star = {};
 
-    stars.reset = function () {
-        stars.size = Math.random() * 2;
-        stars.speed = Math.random() * 0.8;
-        stars.staticSpeed = Math.random() * 0.2;
-        stars.x = window.innerWidth;
-        stars.y = Math.random() * universe.height;
+    star.reset = function () {
+        star.size = Math.random() * 2;
+        star.speed = Math.random() * 0.8;
+        star.staticSpeed = Math.random() * 0.2;
+        star.x = Math.random() * universe.width;
+        star.y = Math.random() * universe.height;
     };
+    star.reset();
 
-    stars.update = function () {
-        var condition = stars.y < 0;
+    star.update = function () {
         if (directions.rightPressed) {
-            stars.x += stars.speed;
-            condition = stars.x > universe.width;
+            star.x += star.speed;
         }
 
         if (directions.leftPressed) {
-            stars.x -= stars.speed;
-            condition = stars.x < 0;
+            star.x -= star.speed;
         }
 
         if (directions.downPressed) {
-            stars.y -= stars.speed;
-            condition = stars.y < 0;
+            star.y -= star.speed;
         } else {
-            stars.y += stars.staticSpeed;
-            condition = stars.y > universe.height;
+            star.y += star.staticSpeed;
         }
 
         if (directions.upPressed) {
-            stars.y += stars.speed;
-            condition = stars.y > universe.height;
+            star.y += star.speed;
         }
 
-        if (condition) {
-            stars.reset();
+        if (star.x > universe.width || star.x < 0 || star.y > universe.height || star.y < 0) {
+            star.reset();
         } else {
-            universe.ctx.fillRect(stars.x, stars.y, stars.size, stars.size);
+            universe.ctx.fillRect(star.x, star.y, star.size, star.size);
         }
         return;
     };
 
-    return stars;
+    return star;
 };
 
 var ShootingStar = function ShootingStar(universe) {
     var shootingStar = {};
-    shootingStar.active = true;
     shootingStar.reset = function () {
         shootingStar.x = Math.random() * universe.width;
         shootingStar.y = 0;
-        shootingStar.len = Math.random() * 80 + 10;
+        shootingStar.len = Math.random() * 90 + 10;
         shootingStar.speed = Math.random() * 10 + 6;
         shootingStar.size = Math.random() * 1 + 0.1;
         shootingStar.waitTime = new Date().getTime() + Math.random() * 3000 + 500;
         shootingStar.active = false;
     };
+    shootingStar.reset();
 
     shootingStar.update = function () {
         if (shootingStar.active) {
@@ -1445,7 +1429,6 @@ var ShootingStar = function ShootingStar(universe) {
             }
         }
     };
-
     return shootingStar;
 };
 
@@ -1475,10 +1458,7 @@ var StarsBackground = function StarsBackground(sg) {
     };
 
     for (var i = 0; i <= universe.height; i++) {
-        universe.stars.push(Stars(universe, {
-            x: Math.random() * universe.width,
-            y: Math.random() * universe.height
-        }));
+        universe.stars.push(Star(universe));
     }
     universe.stars.push(ShootingStar(universe));
 
@@ -1490,11 +1470,9 @@ var StarsBackground = function StarsBackground(sg) {
 
         updateStarsDirectionsOnMouseMove();
 
-        universe.stars.map(function (star) {
-            star.update();
+        universe.stars.map(function (item) {
+            item.update();
         });
-
-        window.requestAnimationFrame(universe.animate);
     };
 
     if (universe.background) {
@@ -1503,6 +1481,8 @@ var StarsBackground = function StarsBackground(sg) {
             return StarsBackground();
         });
     }
+
+    return universe;
 };
 
 exports.default = StarsBackground;

@@ -9,7 +9,7 @@ export const setDirections = (direction, boolean) => {
     directions[direction] = boolean;
 }
 
-const Universe = (sg) => {
+const Universe = sg => {
     const universe = {};
     universe.background = document.getElementById("stars");
     if (!universe.background) {
@@ -28,70 +28,63 @@ const Universe = (sg) => {
     return universe;
 };
 
-const Stars = (universe, starsPos) => {
-    const stars = {};
-    stars.size = Math.random() * 2;
-    stars.speed = Math.random() * 0.8;
-    stars.staticSpeed = Math.random() * 0.2;
-    stars.x = starsPos.x;
-    stars.y = starsPos.y;
-
-    stars.reset = () => {
-        stars.size = Math.random() * 2;
-        stars.speed = Math.random() * 0.8;
-        stars.staticSpeed = Math.random() * 0.2;
-        stars.x = window.innerWidth;
-        stars.y = Math.random() * universe.height;
+const Star = (universe) => {
+    const star = {};
+    
+    star.reset = () => {
+        star.size = Math.random() * 2;
+        star.speed = Math.random() * 0.8;
+        star.staticSpeed = Math.random() * 0.2;
+        star.x = Math.random() * universe.width;
+        star.y = Math.random() * universe.height;
     };
+    star.reset();
 
-    stars.update = () => {
-        let condition = stars.y < 0;
+    star.update = () => {
         if (directions.rightPressed) {
-            stars.x += stars.speed;
-            condition = stars.x > universe.width;
+            star.x += star.speed;
         }
 
         if (directions.leftPressed) {
-            stars.x -= stars.speed;
-            condition = stars.x < 0;
+            star.x -= star.speed;
         }
 
         if (directions.downPressed) {
-            stars.y -= stars.speed;
-            condition = stars.y < 0;
+            star.y -= star.speed;
         } else {
-            stars.y += stars.staticSpeed;
-            condition = stars.y > universe.height;
+            star.y += star.staticSpeed;
         }
 
         if (directions.upPressed) {
-            stars.y += stars.speed;
-            condition = stars.y > universe.height;
+            star.y += star.speed;
         } 
       
-        if (condition) {
-            stars.reset();
+        if (star.x > universe.width ||
+            star.x < 0 ||
+            star.y > universe.height ||
+            star.y < 0) {
+            star.reset();
         } else {
-            universe.ctx.fillRect(stars.x, stars.y, stars.size, stars.size);
+            universe.ctx.fillRect(star.x, star.y, star.size, star.size);
         }
         return;
     }
 
-    return stars;
+    return star;
 };
 
 const ShootingStar = universe => {
     const shootingStar = {};
-    shootingStar.active = true;
     shootingStar.reset = () => {
         shootingStar.x = Math.random() * universe.width;
         shootingStar.y = 0;
-        shootingStar.len = Math.random() * 80 + 10;
+        shootingStar.len = Math.random() * 90 + 10;
         shootingStar.speed = Math.random() * 10 + 6;
         shootingStar.size = Math.random() * 1 + 0.1;
         shootingStar.waitTime = new Date().getTime() + Math.random() * 3000 + 500;
         shootingStar.active = false;
     }
+    shootingStar.reset();
 
     shootingStar.update = () => {
         if (shootingStar.active) {
@@ -112,7 +105,6 @@ const ShootingStar = universe => {
             }
         }
     }
-
     return shootingStar;
 }
 
@@ -144,10 +136,7 @@ const StarsBackground = (sg) => {
 
     for (let i = 0; i <= universe.height; i++) {
         universe.stars.push(
-            Stars(universe, {
-                x: Math.random() * universe.width,
-                y: Math.random() * universe.height
-            })
+            Star(universe)
         );
     }
     universe.stars.push(ShootingStar(universe));
@@ -160,17 +149,17 @@ const StarsBackground = (sg) => {
 
         updateStarsDirectionsOnMouseMove();
 
-        universe.stars.map(star => {
-            star.update();
+        universe.stars.map(item => {
+            item.update();
         });
-        
-        window.requestAnimationFrame(universe.animate);
     }
 
     if (universe.background) {
         universe.animate();
         window.addEventListener('resize', () => StarsBackground());
     }
+
+    return universe;
 }
 
 export default StarsBackground;

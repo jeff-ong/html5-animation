@@ -1,12 +1,13 @@
 import Setting from "./components/Setting";
 import Player from "./components/Player";
 import Enemy from "./components/Enemy";
-import { FireBulletAtEnemy } from "./components/Bullet";
-import { setDirections } from "./components/StarsBackground";
+import { Bullet, FireBulletAtEnemy } from "./components/Bullet";
+import StarsBackground, { setDirections } from "./components/StarsBackground";
 
 const SpaceGame = () => {
   const sg = Setting();
-
+  Bullet(sg);
+  const StarsBackgroundObj = StarsBackground(sg);
   sg.Frame = () => {
     sg.ctx.clearRect(0, 0, sg.canvas.width, sg.canvas.height);
     Player(sg);
@@ -35,6 +36,7 @@ const SpaceGame = () => {
   sg.startTheGame = () => {
     const updatePerFrame = () => {
       sg.Frame();
+      StarsBackgroundObj.animate();
       window.requestAnimationFrame(updatePerFrame);
     };
     updatePerFrame();
